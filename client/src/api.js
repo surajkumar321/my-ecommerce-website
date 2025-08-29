@@ -1,24 +1,20 @@
-// src/api.js
+// client/src/api.js
 import axios from "axios";
 import store from "./redux/store";
 
-// Backend API base URL
-// Priority: .env value -> fallback localhost
 const api = axios.create({
-  baseURL: (process.env.REACT_APP_API_URL || "http://localhost:5000/api").replace(/\/$/, ""),
+  baseURL: process.env.REACT_APP_API_URL, // e.g. https://<server>.onrender.com/api
 });
 
-// Attach token before every request
+// Attach JWT from Redux
 api.interceptors.request.use((config) => {
-  const state = store.getState();
+  const state = store.getState?.() || {};
   const token = state?.auth?.token;
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
+  if (token) config.headers.Authorization = `Bearer ${token}`;
   return config;
 });
 
-// Friendly error handler
+// Friendly error messages
 api.interceptors.response.use(
   (res) => res,
   (err) => {
@@ -28,8 +24,7 @@ api.interceptors.response.use(
     } else if (status === 403) {
       err.userMessage = "Admin only. You don't have permission for this action.";
     } else {
-      err.userMessage =
-        err?.response?.data?.message || "Something went wrong. Please try again.";
+      err.userMessage = err?.response?.data?.message || "Something went wrong. Please try again.";
     }
     return Promise.reject(err);
   }
