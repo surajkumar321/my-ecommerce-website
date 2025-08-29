@@ -1,4 +1,3 @@
-// Server/server.js
 const express = require("express");
 const cors = require("cors");
 const dotenv = require("dotenv");
@@ -8,23 +7,19 @@ dotenv.config();
 
 const app = express();
 
-/* -------------------- CORS -------------------- */
-// EXACT client URL yahan do (Render static site ka URL)
+/* -------- CORS (allow your client + localhost) -------- */
 const allowedOrigins = [
-  process.env.CLIENT_URL,          // e.g. https://my-client.onrender.com
+  process.env.CLIENT_URL,       // e.g. https://my-client.onrender.com
   "http://localhost:3000",
   "https://localhost:3000",
 ].filter(Boolean);
 
 const corsOptions = {
   origin: (origin, cb) => {
-    // server-to-server / curl / same-origin (no Origin header)
-    if (!origin) return cb(null, true);
-
+    if (!origin) return cb(null, true); // server-to-server / curl
     const ok =
       allowedOrigins.includes(origin) ||
-      /https:\/\/.*\.onrender\.com$/.test(origin); // optional: allow any *.onrender.com
-
+      /https:\/\/.*\.onrender\.com$/.test(origin); // optional helper for Render
     return ok ? cb(null, true) : cb(new Error(`CORS blocked: ${origin} not allowed`));
   },
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
@@ -37,14 +32,15 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.options("*", cors(corsOptions)); // preflight OK
 
-/* -------------------- Parsers -------------------- */
+/* -------- Parsers -------- */
 app.use(express.json());
+app.use(express.urlencoded({ extended: true })); // keep this
 
-/* -------------------- Health -------------------- */
+/* -------- Health -------- */
 app.get("/", (_req, res) => res.json({ message: "API running" }));
 app.get("/api/ping", (_req, res) => res.json({ ok: true }));
 
-/* -------------------- Mongo -------------------- */
+/* -------- Mongo -------- */
 if (process.env.MONGO_URI) {
   mongoose
     .connect(process.env.MONGO_URI)
@@ -54,26 +50,23 @@ if (process.env.MONGO_URI) {
   console.warn("⚠️  MONGO_URI not set — skipping Mongo connection.");
 }
 
-/* -------------------- Routes -------------------- */
+/* -------- Routes -------- */
 app.use("/api/products", require("./routes/productRoutes"));
 app.use("/api/users", require("./routes/userRoutes"));
 app.use("/api/orders", require("./routes/orderRoutes"));
 
-/* -------------------- 404 -------------------- */
+/* -------- 404 -------- */
 app.use((req, res) => res.status(404).json({ message: "Not Found" }));
 
-/* -------------------- Error handler -------------------- */
+/* -------- Error handler -------- */
 app.use((err, _req, res, _next) => {
   console.error("Error:", err?.message || err);
   const status = res.statusCode >= 400 ? res.statusCode : 500;
   res.status(status).json({
-    message:
-      err?.userMessage ||
-      err?.message ||
-      "Something went wrong. Please try again.",
+    message: err?.userMessage || err?.message || "Something went wrong. Please try again.",
   });
 });
 
-/* -------------------- Start -------------------- */
+/* -------- Start -------- */
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));

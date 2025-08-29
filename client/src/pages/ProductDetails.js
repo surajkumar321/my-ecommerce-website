@@ -1,7 +1,8 @@
+// client/src/pages/ProductDetails.js
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import api from "../api";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { addToCart } from "../redux/actions/cartActions";
 import { toggleWishlist } from "../redux/actions/wishlistActions";
 import RatingStars from "../components/RatingStars";
@@ -11,6 +12,10 @@ export default function ProductDetails() {
   const { id } = useParams();
   const dispatch = useDispatch();
 
+  // ✅ take auth from Redux (NOT localStorage "user")
+  const { token, user } = useSelector((s) => s.auth || {});
+  const isAuthed = !!token;
+
   const [p, setP] = useState(null);
   const [active, setActive] = useState("");
   const [qty, setQty] = useState(1);
@@ -18,8 +23,6 @@ export default function ProductDetails() {
   const [rating, setRating] = useState(5);
   const [comment, setComment] = useState("");
   const [msg, setMsg] = useState("");
-
-  const user = JSON.parse(localStorage.getItem("user") || "null");
 
   const load = async () => {
     try {
@@ -40,7 +43,11 @@ export default function ProductDetails() {
   useEffect(() => { load(); /* eslint-disable-next-line */ }, [id]);
 
   if (!p) {
-    return <div className="container">{msg ? <ErrorBanner message={msg} /> : <p>Loading…</p>}</div>;
+    return (
+      <div className="container">
+        {msg ? <ErrorBanner message={msg} /> : <p>Loading…</p>}
+      </div>
+    );
   }
 
   const imgs = p.images?.length ? p.images.map((i) => i.url) : p.imageUrl ? [p.imageUrl] : [];
@@ -50,9 +57,13 @@ export default function ProductDetails() {
     e.preventDefault();
     setMsg("");
     try {
-      if (!user?.token) { setMsg("Please login to write a review."); return; }
+      if (!isAuthed) {
+        setMsg("Please login to write a review.");
+        return;
+      }
       await api.post(`/products/${p._id}/reviews`, { rating, comment });
-      setComment(""); setRating(5);
+      setComment("");
+      setRating(5);
       await load();
       setMsg("Thanks! Your review was added.");
     } catch (err) {
@@ -62,11 +73,8 @@ export default function ProductDetails() {
 
   return (
     <div className="container" style={{ padding: 16 }}>
-      {!!msg && !p && <ErrorBanner message={msg} />}
-
-      {/* ✅ responsive wrapper */}
+      {/* Gallery + Info */}
       <div className="pdp">
-        {/* Gallery */}
         <div className="pdp-main">
           <img
             src={main}
@@ -89,7 +97,6 @@ export default function ProductDetails() {
           )}
         </div>
 
-        {/* Info */}
         <div>
           {!!msg && <ErrorBanner message={msg} />}
           <h2>{p.name}</h2>
@@ -116,9 +123,10 @@ export default function ProductDetails() {
         </div>
       </div>
 
-      {/* Reviews (unchanged) */}
+      {/* Reviews */}
       <div className="card" style={{ marginTop: 24, padding: 16 }}>
         <h3>Customer Reviews</h3>
+
         {(!p.reviews || p.reviews.length === 0) ? (
           <p style={{ color: "#6b7280" }}>Be the first to review.</p>
         ) : (
@@ -140,7 +148,7 @@ export default function ProductDetails() {
 
         <div style={{ marginTop: 18 }}>
           <h4>Write a Review</h4>
-          {!user ? (
+          {!isAuthed ? (
             <ErrorBanner message="Please login to write a review." />
           ) : (
             <form onSubmit={submitReview} style={{ display: "grid", gap: 10, maxWidth: 480 }}>
@@ -165,7 +173,11 @@ export default function ProductDetails() {
                 required
               />
               <div><button type="submit">Submit Review</button></div>
-              {msg && <p style={{ color: msg.startsWith("Thanks") ? "#065f46" : "#ef4444" }}>{msg}</p>}
+              {msg && (
+                <p style={{ color: msg.startsWith("Thanks") ? "#065f46" : "#ef4444" }}>
+                  {msg}
+                </p>
+              )}
             </form>
           )}
         </div>
