@@ -9,23 +9,29 @@ dotenv.config();
 const app = express();
 
 // ---------- CORS (only allow your client + localhost) ----------
-const allowedOrigins = [process.env.CLIENT_URL, "http://localhost:3000"].filter(Boolean);
+const allowedOrigins = [
+  process.env.CLIENT_URL,          // e.g. https://my-ecommerce-website-1.onrender.com
+  "http://localhost:3000",
+  "https://localhost:3000",
+].filter(Boolean);
 
-app.use(
-  cors({
-    origin: (origin, cb) => {
-      // allow same-origin / server-to-server / curl (no origin)
-      if (!origin) return cb(null, true);
-      return allowedOrigins.includes(origin)
-        ? cb(null, true)
-        : cb(new Error(`CORS blocked: ${origin} not allowed`));
-    },
-    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-    credentials: false,
-  })
-);
-app.options("*", cors());
+app.use(require("cors")({
+  origin: (origin, cb) => {
+    if (!origin) return cb(null, true); // curl/server-to-server
+    const ok =
+      allowedOrigins.includes(origin) ||
+      /https:\/\/.*\.onrender\.com$/.test(origin); // optional helper for Render
+    return ok ? cb(null, true) : cb(new Error(`CORS blocked: ${origin} not allowed`));
+  },
+  methods: ["GET","POST","PUT","PATCH","DELETE","OPTIONS"],
+  allowedHeaders: ["Content-Type","Authorization","X-Requested-With","Accept","Origin"],
+  exposedHeaders: ["Content-Length"],
+  credentials: false,
+  optionsSuccessStatus: 204,
+}));
+
+app.options("*", require("cors")()); // preflight OK
+
 
 // Body parser
 app.use(express.json());
