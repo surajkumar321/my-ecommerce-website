@@ -1,20 +1,19 @@
-// client/src/api.js
 import axios from "axios";
 import store from "./redux/store";
 
 const api = axios.create({
-  baseURL: process.env.REACT_APP_API_URL, // e.g. https://<server>.onrender.com/api
+  baseURL: process.env.REACT_APP_API_URL, // e.g. https://your-server.onrender.com/api
 });
 
-// Attach JWT from Redux
+// attach token from redux
 api.interceptors.request.use((config) => {
-  const state = store.getState?.() || {};
+  const state = store.getState?.();
   const token = state?.auth?.token;
   if (token) config.headers.Authorization = `Bearer ${token}`;
   return config;
 });
 
-// Friendly error messages
+// friendly errors
 api.interceptors.response.use(
   (res) => res,
   (err) => {

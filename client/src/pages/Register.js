@@ -1,4 +1,3 @@
-// client/src/pages/Register.js
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { registerUser } from "../redux/actions/authActions";
