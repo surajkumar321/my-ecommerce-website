@@ -9,7 +9,7 @@ export default function Cart() {
   const nav = useNavigate();
   const items = useSelector((s) => s.cart.items);
 
-  // ✅ totals calculation with discountPrice
+  // ✅ totals calculation with discountPrice priority
   const totals = useMemo(() => {
     const subtotal = items.reduce((sum, it) => {
       const price = it.discountPrice || it.actualPrice || it.price || 0;
@@ -57,7 +57,6 @@ export default function Cart() {
                 const price = it.discountPrice || it.actualPrice || it.price || 0;
                 return (
                   <tr key={it._id} style={{ borderTop: "1px solid #eee" }}>
-                    {/* Product Info */}
                     <Td align="left" dataLabel="Product">
                       <div className="cart-prod">
                         <img
@@ -74,7 +73,7 @@ export default function Cart() {
 
                     {/* ✅ Price Section */}
                     <Td dataLabel="Price">
-                      {it.actualPrice && it.discountPrice ? (
+                      {it.discountPrice ? (
                         <>
                           <span
                             style={{
@@ -92,12 +91,11 @@ export default function Cart() {
                         </>
                       ) : (
                         <span style={{ fontSize: 16, fontWeight: 700 }}>
-                          ₹{it.price}
+                          ₹{it.actualPrice || it.price}
                         </span>
                       )}
                     </Td>
 
-                    {/* Quantity */}
                     <Td dataLabel="Qty">
                       <select
                         value={it.qty || 1}
@@ -114,7 +112,6 @@ export default function Cart() {
                     {/* ✅ Total per item */}
                     <Td dataLabel="Total">₹{price * (it.qty || 1)}</Td>
 
-                    {/* Remove */}
                     <Td dataLabel="Action">
                       <button
                         onClick={() => dispatch(removeFromCart(it._id))}
@@ -208,9 +205,7 @@ const btn = (type) => {
 };
 
 const Row = ({ label, children }) => (
-  <div
-    style={{ display: "flex", justifyContent: "space-between", padding: "6px 0" }}
-  >
+  <div style={{ display: "flex", justifyContent: "space-between", padding: "6px 0" }}>
     <span style={{ color: "#6b7280" }}>{label}</span>
     <span style={{ fontWeight: 600 }}>{children}</span>
   </div>

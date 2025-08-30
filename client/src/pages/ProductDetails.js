@@ -41,7 +41,6 @@ export default function ProductDetails() {
 
   useEffect(() => {
     load();
-    // eslint-disable-next-line
   }, [id]);
 
   if (!p) {
@@ -115,29 +114,29 @@ export default function ProductDetails() {
 
           {/* ✅ Price section (Flipkart style) */}
           <div style={{ marginTop: 8 }}>
-            {p.actualPrice && p.discountPrice ? (
+            {p.discountPrice ? (
               <>
                 <span
                   style={{
-                    fontSize: 16,
+                    fontSize: 14,
                     color: "#6b7280",
                     textDecoration: "line-through",
                     marginRight: 8,
                   }}
                 >
-                  ₹{p.actualPrice}
+                  ₹{p.actualPrice || p.price}
                 </span>
                 <span
-                  style={{ fontSize: 24, fontWeight: 700, color: "#111827" }}
+                  style={{ fontSize: 22, fontWeight: 700, color: "#111827" }}
                 >
                   ₹{p.discountPrice}
                 </span>
               </>
             ) : (
               <span
-                style={{ fontSize: 24, fontWeight: 700, color: "#111827" }}
+                style={{ fontSize: 22, fontWeight: 700, color: "#111827" }}
               >
-                ₹{p.price}
+                ₹{p.actualPrice || p.price || 0}
               </span>
             )}
           </div>
@@ -146,14 +145,9 @@ export default function ProductDetails() {
             {p.brand} {p.category ? `• ${p.category}` : ""}
           </p>
           <p>{p.description}</p>
-          <div
-            style={{
-              display: "flex",
-              gap: 10,
-              alignItems: "center",
-              marginTop: 12,
-            }}
-          >
+
+          {/* Add to Cart + Wishlist */}
+          <div style={{ display: "flex", gap: 10, marginTop: 12 }}>
             <input
               type="number"
               min={1}
@@ -247,5 +241,3 @@ export default function ProductDetails() {
     </div>
   );
 }
-
-

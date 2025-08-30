@@ -1,3 +1,4 @@
+// client/src/pages/Checkout.js
 import React, { useMemo, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import api from "../api";
@@ -10,7 +11,6 @@ export default function Checkout() {
   const dispatch = useDispatch();
   const items = useSelector((s) => s.cart.items || []);
 
-  // address form
   const [addr, setAddr] = useState({
     fullName: "",
     phone: "",
@@ -22,7 +22,7 @@ export default function Checkout() {
   });
   const [msg, setMsg] = useState("");
 
-  // ✅ totals calculation with discountPrice
+  // ✅ totals with discountPrice
   const totals = useMemo(() => {
     const itemsPrice = items.reduce((s, x) => {
       const price = x.discountPrice || x.actualPrice || x.price || 0;
@@ -38,14 +38,7 @@ export default function Checkout() {
     try {
       setMsg("");
       if (!items.length) return setMsg("Cart is empty");
-      if (
-        !addr.fullName ||
-        !addr.phone ||
-        !addr.pincode ||
-        !addr.address ||
-        !addr.city ||
-        !addr.state
-      ) {
+      if (!addr.fullName || !addr.phone || !addr.pincode || !addr.address || !addr.city || !addr.state) {
         return setMsg("Please fill all required address fields");
       }
 
@@ -76,11 +69,7 @@ export default function Checkout() {
     }
   };
 
-  const onChange = (k) => (e) =>
-    setAddr((f) => ({
-      ...f,
-      [k]: e.target.value,
-    }));
+  const onChange = (k) => (e) => setAddr((f) => ({ ...f, [k]: e.target.value }));
 
   return (
     <div className="container">
@@ -91,43 +80,14 @@ export default function Checkout() {
         <div>
           <div className="card" style={{ padding: 16 }}>
             <h3>Shipping Address</h3>
-
             <form className="addr-form" onSubmit={(e) => e.preventDefault()}>
-              <input
-                placeholder="Full name"
-                value={addr.fullName}
-                onChange={onChange("fullName")}
-              />
-              <input
-                placeholder="Phone"
-                value={addr.phone}
-                onChange={onChange("phone")}
-              />
-              <input
-                placeholder="Pincode"
-                value={addr.pincode}
-                onChange={onChange("pincode")}
-              />
-              <input
-                placeholder="City"
-                value={addr.city}
-                onChange={onChange("city")}
-              />
-              <input
-                placeholder="Area/Locality"
-                value={addr.area}
-                onChange={onChange("area")}
-              />
-              <input
-                placeholder="State"
-                value={addr.state}
-                onChange={onChange("state")}
-              />
-              <textarea
-                placeholder="Address (house, street…)"
-                value={addr.address}
-                onChange={onChange("address")}
-              />
+              <input placeholder="Full name" value={addr.fullName} onChange={onChange("fullName")} />
+              <input placeholder="Phone" value={addr.phone} onChange={onChange("phone")} />
+              <input placeholder="Pincode" value={addr.pincode} onChange={onChange("pincode")} />
+              <input placeholder="City" value={addr.city} onChange={onChange("city")} />
+              <input placeholder="Area/Locality" value={addr.area} onChange={onChange("area")} />
+              <input placeholder="State" value={addr.state} onChange={onChange("state")} />
+              <textarea placeholder="Address (house, street…)" value={addr.address} onChange={onChange("address")} />
             </form>
           </div>
 
@@ -157,23 +117,11 @@ export default function Checkout() {
         {/* RIGHT: Summary */}
         <div className="card order-card">
           <h3>Order Summary</h3>
-          <div className="row">
-            <span>Subtotal</span>
-            <b>₹{totals.itemsPrice}</b>
-          </div>
-          <div className="row">
-            <span>Shipping</span>
-            <b>₹{totals.shippingPrice}</b>
-          </div>
-          <div className="row">
-            <span>Tax (18%)</span>
-            <b>₹{totals.taxPrice}</b>
-          </div>
+          <div className="row"><span>Subtotal</span><b>₹{totals.itemsPrice}</b></div>
+          <div className="row"><span>Shipping</span><b>₹{totals.shippingPrice}</b></div>
+          <div className="row"><span>Tax (18%)</span><b>₹{totals.taxPrice}</b></div>
           <hr />
-          <div className="row total">
-            <span>Total</span>
-            <b>₹{totals.totalPrice}</b>
-          </div>
+          <div className="row total"><span>Total</span><b>₹{totals.totalPrice}</b></div>
 
           <button
             className="btn-primary full"
@@ -190,4 +138,3 @@ export default function Checkout() {
     </div>
   );
 }
-
