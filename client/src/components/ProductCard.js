@@ -1,5 +1,5 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { addToCart } from "../redux/actions/cartActions";
 import { toggleWishlist } from "../redux/actions/wishlistActions";
@@ -7,6 +7,7 @@ import { toggleWishlist } from "../redux/actions/wishlistActions";
 export default function ProductCard({ product }) {
   const p = product || {};
   const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   const img = p.imageUrl || p.images?.[0]?.url || "/placeholder.png";
   const rating = Number(p.rating || 0);
@@ -82,18 +83,14 @@ export default function ProductCard({ product }) {
               >
                 ₹{p.actualPrice || p.price}
               </span>
-              <span
-                style={{
-                  fontSize: 18,
-                  fontWeight: 700,
-                  color: "#111827",
-                }}
-              >
+              <span style={{ fontSize: 18, fontWeight: 700, color: "#111827" }}>
                 ₹{p.discountPrice}
               </span>
             </>
           ) : (
-            <span style={{ fontSize: 18, fontWeight: 700 }}>₹{p.price}</span>
+            <span style={{ fontSize: 18, fontWeight: 700 }}>
+              ₹{p.price || p.actualPrice || 0}
+            </span>
           )}
         </div>
 

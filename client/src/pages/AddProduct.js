@@ -29,7 +29,19 @@ export default function AddProduct() {
     e.preventDefault();
     try {
       const fd = new FormData();
-      Object.entries(form).forEach(([k, v]) => fd.append(k, v));
+
+      // ✅ always save "price" for compatibility with cart
+      const finalPrice = form.discountPrice || form.actualPrice;
+
+      fd.append("name", form.name);
+      fd.append("actualPrice", form.actualPrice);
+      fd.append("discountPrice", form.discountPrice);
+      fd.append("price", finalPrice); // ✅ important
+      fd.append("brand", form.brand);
+      fd.append("category", form.category);
+      fd.append("stock", form.stock);
+      fd.append("description", form.description);
+
       files.forEach((f) => fd.append("images", f));
 
       await api.post("/products", fd, {
@@ -45,7 +57,10 @@ export default function AddProduct() {
   return (
     <div className="container">
       <h2>Add Product (Multiple Images)</h2>
-      <form onSubmit={submit} style={{ display: "grid", gap: 10, maxWidth: 560 }}>
+      <form
+        onSubmit={submit}
+        style={{ display: "grid", gap: 10, maxWidth: 560 }}
+      >
         <input
           placeholder="Name"
           value={form.name}
@@ -63,8 +78,9 @@ export default function AddProduct() {
           type="number"
           placeholder="Discount Price"
           value={form.discountPrice}
-          onChange={(e) => setForm({ ...form, discountPrice: e.target.value })}
-          required
+          onChange={(e) =>
+            setForm({ ...form, discountPrice: e.target.value })
+          }
         />
         <input
           placeholder="Brand"
@@ -85,7 +101,9 @@ export default function AddProduct() {
         <textarea
           placeholder="Description"
           value={form.description}
-          onChange={(e) => setForm({ ...form, description: e.target.value })}
+          onChange={(e) =>
+            setForm({ ...form, description: e.target.value })
+          }
         />
 
         <label>Product Images (up to 6)</label>
