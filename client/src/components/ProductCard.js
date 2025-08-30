@@ -1,3 +1,4 @@
+// client/src/components/ProductCard.js
 import React from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
@@ -70,34 +71,20 @@ export default function ProductCard({ product }) {
       <div style={{ padding: "10px 6px" }}>
         <div style={{ fontWeight: 700, marginBottom: 6 }}>{p.name}</div>
 
-        {/* ✅ Price Section with % OFF */}
+        {/* ✅ Always show actual + discount like Flipkart */}
         <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-          {p.actualPrice && p.discountPrice ? (
-            <>
-              <span
-                style={{
-                  fontSize: 14,
-                  color: "#6b7280",
-                  textDecoration: "line-through",
-                }}
-              >
-                ₹{p.actualPrice}
-              </span>
-              <span style={{ fontSize: 18, fontWeight: 700, color: "#111827" }}>
-                ₹{p.discountPrice}
-              </span>
-              <span style={{ fontSize: 14, color: "green", fontWeight: 600 }}>
-                {Math.round(
-                  ((p.actualPrice - p.discountPrice) / p.actualPrice) * 100
-                )}
-                % OFF
-              </span>
-            </>
-          ) : (
-            <span style={{ fontSize: 18, fontWeight: 700 }}>
-              ₹{p.price || p.actualPrice || 0}
-            </span>
-          )}
+          <span
+            style={{
+              fontSize: 14,
+              color: "#6b7280",
+              textDecoration: "line-through",
+            }}
+          >
+            ₹{p.actualPrice || p.price || 0}
+          </span>
+          <span style={{ fontSize: 18, fontWeight: 700, color: "#111827" }}>
+            ₹{p.discountPrice || p.actualPrice || p.price || 0}
+          </span>
         </div>
 
         <div style={{ fontSize: 13, color: "#6b7280", marginTop: 4 }}>
