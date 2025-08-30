@@ -30,13 +30,13 @@ export default function AddProduct() {
     try {
       const fd = new FormData();
 
-      // ✅ Always save "price" for compatibility with Cart/Orders
+      // ✅ calculate final selling price (discount ya actual)
       const finalPrice = form.discountPrice || form.actualPrice;
 
       fd.append("name", form.name);
       fd.append("actualPrice", form.actualPrice);
       fd.append("discountPrice", form.discountPrice);
-      fd.append("price", finalPrice); // important for backward compatibility
+      fd.append("price", finalPrice); // 🔑 fix for compatibility
       fd.append("brand", form.brand);
       fd.append("category", form.category);
       fd.append("stock", form.stock);
@@ -67,54 +67,45 @@ export default function AddProduct() {
           onChange={(e) => setForm({ ...form, name: e.target.value })}
           required
         />
-
         <input
           type="number"
-          placeholder="Actual Price (MRP)"
+          placeholder="Actual Price"
           value={form.actualPrice}
           onChange={(e) => setForm({ ...form, actualPrice: e.target.value })}
           required
         />
-
         <input
           type="number"
-          placeholder="Discount Price (Selling Price)"
+          placeholder="Discount Price (optional)"
           value={form.discountPrice}
           onChange={(e) =>
             setForm({ ...form, discountPrice: e.target.value })
           }
         />
-
         <input
           placeholder="Brand"
           value={form.brand}
           onChange={(e) => setForm({ ...form, brand: e.target.value })}
         />
-
         <input
           placeholder="Category"
           value={form.category}
           onChange={(e) => setForm({ ...form, category: e.target.value })}
         />
-
         <input
           type="number"
           placeholder="Stock"
           value={form.stock}
           onChange={(e) => setForm({ ...form, stock: e.target.value })}
         />
-
         <textarea
           placeholder="Description"
           value={form.description}
-          onChange={(e) =>
-            setForm({ ...form, description: e.target.value })
-          }
+          onChange={(e) => setForm({ ...form, description: e.target.value })}
         />
 
         <label>Product Images (up to 6)</label>
         <input type="file" accept="image/*" multiple onChange={onFiles} />
-
         {previews.length > 0 && (
           <div
             style={{
@@ -145,7 +136,6 @@ export default function AddProduct() {
             Cancel
           </button>
         </div>
-
         {msg && <p style={{ color: "red" }}>{msg}</p>}
       </form>
     </div>

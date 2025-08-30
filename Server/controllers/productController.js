@@ -61,7 +61,9 @@ const getProducts = async (req, res) => {
   }
 };
 
-/** GET /api/products/categories */
+/**
+ * GET /api/products/categories
+ */
 const getCategories = async (_req, res) => {
   try {
     const cats = await Product.distinct("category", { category: { $ne: null } });
@@ -71,7 +73,9 @@ const getCategories = async (_req, res) => {
   }
 };
 
-/** GET /api/products/brands */
+/**
+ * GET /api/products/brands
+ */
 const getBrands = async (_req, res) => {
   try {
     const brands = await Product.distinct("brand", { brand: { $ne: null } });
@@ -82,7 +86,9 @@ const getBrands = async (_req, res) => {
   }
 };
 
-/** GET /api/products/:id */
+/**
+ * GET /api/products/:id
+ */
 const getProductById = async (req, res) => {
   try {
     const p = await Product.findById(req.params.id);
@@ -93,7 +99,9 @@ const getProductById = async (req, res) => {
   }
 };
 
-/** POST /api/products (Admin only) */
+/**
+ * POST /api/products
+ */
 const addProduct = async (req, res) => {
   try {
     const {
@@ -106,16 +114,19 @@ const addProduct = async (req, res) => {
       brand,
     } = req.body;
 
-    const finalPrice = discountPrice || actualPrice;
-
     const files = Array.isArray(req.files) ? req.files : [];
     const images = files.map((f) => ({ url: f.path, publicId: f.filename }));
 
+    // ✅ Safe price handling
+    const finalActual = Number(actualPrice) || 0;
+    const finalDiscount = Number(discountPrice) || 0;
+    const finalPrice = finalDiscount > 0 ? finalDiscount : finalActual;
+
     const doc = await Product.create({
       name,
-      actualPrice: Number(actualPrice),
-      discountPrice: Number(discountPrice),
-      price: Number(finalPrice), // ✅ always keep fallback
+      actualPrice: finalActual,
+      discountPrice: finalDiscount,
+      price: finalPrice, // ✅ always save correct price
       category,
       stock: Number(stock),
       description,
@@ -131,7 +142,9 @@ const addProduct = async (req, res) => {
   }
 };
 
-/** PUT /api/products/:id (Admin only) */
+/**
+ * PUT /api/products/:id
+ */
 const updateProduct = async (req, res) => {
   try {
     const p = await Product.findById(req.params.id);
@@ -150,14 +163,15 @@ const updateProduct = async (req, res) => {
     if (name != null) p.name = name;
     if (actualPrice != null) p.actualPrice = Number(actualPrice);
     if (discountPrice != null) p.discountPrice = Number(discountPrice);
-
-    // ✅ keep legacy "price" synced
-    p.price = p.discountPrice || p.actualPrice;
-
     if (category != null) p.category = category;
     if (stock != null) p.stock = Number(stock);
     if (description != null) p.description = description;
     if (brand != null) p.brand = brand;
+
+    // ✅ Safe price update
+    const finalActual = p.actualPrice || 0;
+    const finalDiscount = p.discountPrice || 0;
+    p.price = finalDiscount > 0 ? finalDiscount : finalActual;
 
     const files = Array.isArray(req.files) ? req.files : [];
     if (files.length) {
@@ -167,9 +181,7 @@ const updateProduct = async (req, res) => {
       ].filter(Boolean);
 
       await Promise.all(
-        toDelete.map((pid) =>
-          cloudinary.uploader.destroy(pid).catch(() => null)
-        )
+        toDelete.map((pid) => cloudinary.uploader.destroy(pid).catch(() => null))
       );
 
       const images = files.map((f) => ({ url: f.path, publicId: f.filename }));
@@ -185,7 +197,9 @@ const updateProduct = async (req, res) => {
   }
 };
 
-/** DELETE /api/products/:id */
+/**
+ * DELETE /api/products/:id
+ */
 const deleteProduct = async (req, res) => {
   try {
     const p = await Product.findById(req.params.id);
@@ -207,16 +221,16 @@ const deleteProduct = async (req, res) => {
   }
 };
 
-/** POST /api/products/:id/reviews */
+/**
+ * POST /api/products/:id/reviews
+ */
 const addReview = async (req, res) => {
   try {
     const { rating, comment } = req.body;
     const userName = req.user?.name || "Anonymous";
 
     if (!rating || !comment) {
-      return res
-        .status(400)
-        .json({ message: "rating and comment are required" });
+      return res.status(400).json({ message: "rating and comment are required" });
     }
 
     const product = await Product.findById(req.params.id);

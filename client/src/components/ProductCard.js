@@ -72,7 +72,7 @@ export default function ProductCard({ product }) {
 
         {/* ✅ Price Section */}
         <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-          {p.discountPrice ? (
+          {p.actualPrice && p.discountPrice ? (
             <>
               <span
                 style={{
@@ -81,15 +81,27 @@ export default function ProductCard({ product }) {
                   textDecoration: "line-through",
                 }}
               >
-                ₹{p.actualPrice || p.price}
+                ₹{p.actualPrice}
               </span>
-              <span style={{ fontSize: 18, fontWeight: 700, color: "#111827" }}>
+              <span
+                style={{ fontSize: 18, fontWeight: 700, color: "#111827" }}
+              >
                 ₹{p.discountPrice}
               </span>
+              {/* discount % calculation */}
+              {Number(p.actualPrice) > Number(p.discountPrice) && (
+                <span style={{ color: "green", fontSize: 13, fontWeight: 600 }}>
+                  (
+                  {Math.round(
+                    ((p.actualPrice - p.discountPrice) / p.actualPrice) * 100
+                  )}
+                  % OFF)
+                </span>
+              )}
             </>
           ) : (
             <span style={{ fontSize: 18, fontWeight: 700 }}>
-              ₹{p.actualPrice || p.price || 0}
+              ₹{p.price || 0}
             </span>
           )}
         </div>

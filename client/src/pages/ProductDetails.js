@@ -11,7 +11,6 @@ import ErrorBanner from "../components/ErrorBanner";
 export default function ProductDetails() {
   const { id } = useParams();
   const dispatch = useDispatch();
-
   const { token } = useSelector((s) => s.auth || {});
   const isAuthed = !!token;
 
@@ -35,12 +34,13 @@ export default function ProductDetails() {
       setActive(imgs[0] || "");
       setMsg("");
     } catch (e) {
-      setMsg(e.userMessage || e.response?.data?.message || e.message);
+      setMsg(e.response?.data?.message || e.message);
     }
   };
 
   useEffect(() => {
     load();
+    // eslint-disable-next-line
   }, [id]);
 
   if (!p) {
@@ -58,6 +58,8 @@ export default function ProductDetails() {
     : [];
   const main = active || imgs[0] || "/placeholder.png";
 
+  const price = p.discountPrice || p.actualPrice || p.price || 0;
+
   const submitReview = async (e) => {
     e.preventDefault();
     setMsg("");
@@ -72,13 +74,13 @@ export default function ProductDetails() {
       await load();
       setMsg("Thanks! Your review was added.");
     } catch (err) {
-      setMsg(err.userMessage || err.response?.data?.message || err.message);
+      setMsg(err.response?.data?.message || err.message);
     }
   };
 
   return (
     <div className="container" style={{ padding: 16 }}>
-      {/* Gallery + Info */}
+      {/* ---- Gallery + Info ---- */}
       <div className="pdp">
         <div className="pdp-main">
           <img
@@ -105,6 +107,8 @@ export default function ProductDetails() {
         <div>
           {!!msg && <ErrorBanner message={msg} />}
           <h2>{p.name}</h2>
+
+          {/* Rating */}
           <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
             <RatingStars value={Number(p.rating || 0)} />
             <span style={{ color: "#6b7280" }}>
@@ -112,7 +116,7 @@ export default function ProductDetails() {
             </span>
           </div>
 
-          {/* ✅ Price section (Flipkart style) */}
+          {/* ✅ Price section */}
           <div style={{ marginTop: 8 }}>
             {p.discountPrice ? (
               <>
@@ -124,7 +128,7 @@ export default function ProductDetails() {
                     marginRight: 8,
                   }}
                 >
-                  ₹{p.actualPrice || p.price}
+                  ₹{p.actualPrice}
                 </span>
                 <span
                   style={{ fontSize: 22, fontWeight: 700, color: "#111827" }}
@@ -136,18 +140,26 @@ export default function ProductDetails() {
               <span
                 style={{ fontSize: 22, fontWeight: 700, color: "#111827" }}
               >
-                ₹{p.actualPrice || p.price || 0}
+                ₹{price}
               </span>
             )}
           </div>
 
+          {/* Brand + Category */}
           <p style={{ color: "#6b7280" }}>
             {p.brand} {p.category ? `• ${p.category}` : ""}
           </p>
           <p>{p.description}</p>
 
-          {/* Add to Cart + Wishlist */}
-          <div style={{ display: "flex", gap: 10, marginTop: 12 }}>
+          {/* Cart + Wishlist */}
+          <div
+            style={{
+              display: "flex",
+              gap: 10,
+              alignItems: "center",
+              marginTop: 12,
+            }}
+          >
             <input
               type="number"
               min={1}
@@ -165,10 +177,9 @@ export default function ProductDetails() {
         </div>
       </div>
 
-      {/* Reviews */}
+      {/* ---- Reviews ---- */}
       <div className="card" style={{ marginTop: 24, padding: 16 }}>
         <h3>Customer Reviews</h3>
-
         {!p.reviews || p.reviews.length === 0 ? (
           <p style={{ color: "#6b7280" }}>Be the first to review.</p>
         ) : (
@@ -193,6 +204,7 @@ export default function ProductDetails() {
           </div>
         )}
 
+        {/* Review Form */}
         <div style={{ marginTop: 18 }}>
           <h4>Write a Review</h4>
           {!isAuthed ? (

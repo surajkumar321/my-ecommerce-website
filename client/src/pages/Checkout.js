@@ -22,7 +22,7 @@ export default function Checkout() {
   });
   const [msg, setMsg] = useState("");
 
-  // ✅ totals with discountPrice
+  // ✅ totals calculation with discountPrice
   const totals = useMemo(() => {
     const itemsPrice = items.reduce((s, x) => {
       const price = x.discountPrice || x.actualPrice || x.price || 0;

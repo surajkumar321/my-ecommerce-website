@@ -1,12 +1,10 @@
-// client/src/pages/EditProduct.js
 import React, { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import api from "../api";
 
 export default function EditProduct() {
   const { id } = useParams();
   const nav = useNavigate();
-
   const [form, setForm] = useState({
     name: "",
     actualPrice: "",
@@ -20,28 +18,27 @@ export default function EditProduct() {
   const [previews, setPreviews] = useState([]);
   const [msg, setMsg] = useState("");
 
-  // Load existing product
+  const load = async () => {
+    try {
+      const { data } = await api.get(`/products/${id}`);
+      setForm({
+        name: data.name,
+        actualPrice: data.actualPrice || data.price || "",
+        discountPrice: data.discountPrice || "",
+        category: data.category || "",
+        stock: data.stock || "",
+        description: data.description || "",
+        brand: data.brand || "",
+      });
+      setPreviews(data.images?.map((i) => i.url) || [data.imageUrl].filter(Boolean));
+    } catch (e) {
+      setMsg(e.response?.data?.message || e.message);
+    }
+  };
+
   useEffect(() => {
-    const load = async () => {
-      try {
-        const { data } = await api.get(`/products/${id}`);
-        setForm({
-          name: data.name || "",
-          actualPrice: data.actualPrice || data.price || "",
-          discountPrice: data.discountPrice || "",
-          category: data.category || "",
-          stock: data.stock || "",
-          description: data.description || "",
-          brand: data.brand || "",
-        });
-        setPreviews(
-          (data.images || []).map((img) => img.url).filter(Boolean)
-        );
-      } catch (err) {
-        setMsg(err.response?.data?.message || err.message);
-      }
-    };
     load();
+    // eslint-disable-next-line
   }, [id]);
 
   const onFiles = (e) => {
@@ -56,13 +53,12 @@ export default function EditProduct() {
     e.preventDefault();
     try {
       const fd = new FormData();
-
       const finalPrice = form.discountPrice || form.actualPrice;
 
       fd.append("name", form.name);
       fd.append("actualPrice", form.actualPrice);
       fd.append("discountPrice", form.discountPrice);
-      fd.append("price", finalPrice); // ✅ compatibility
+      fd.append("price", finalPrice); // 🔑 important
       fd.append("brand", form.brand);
       fd.append("category", form.category);
       fd.append("stock", form.stock);
@@ -97,14 +93,12 @@ export default function EditProduct() {
           type="number"
           placeholder="Actual Price"
           value={form.actualPrice}
-          onChange={(e) =>
-            setForm({ ...form, actualPrice: e.target.value })
-          }
+          onChange={(e) => setForm({ ...form, actualPrice: e.target.value })}
           required
         />
         <input
           type="number"
-          placeholder="Discount Price"
+          placeholder="Discount Price (optional)"
           value={form.discountPrice}
           onChange={(e) =>
             setForm({ ...form, discountPrice: e.target.value })
@@ -129,12 +123,10 @@ export default function EditProduct() {
         <textarea
           placeholder="Description"
           value={form.description}
-          onChange={(e) =>
-            setForm({ ...form, description: e.target.value })
-          }
+          onChange={(e) => setForm({ ...form, description: e.target.value })}
         />
 
-        <label>Update Images (up to 6)</label>
+        <label>Product Images (up to 6)</label>
         <input type="file" accept="image/*" multiple onChange={onFiles} />
         {previews.length > 0 && (
           <div
@@ -148,7 +140,7 @@ export default function EditProduct() {
               <img
                 key={i}
                 src={src}
-                alt={"preview" + i}
+                alt={"p" + i}
                 style={{
                   width: "100%",
                   height: 100,
@@ -171,4 +163,3 @@ export default function EditProduct() {
     </div>
   );
 }
-
