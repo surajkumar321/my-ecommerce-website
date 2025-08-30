@@ -5,7 +5,6 @@ const cloudinary = require("../config/cloudinary");
 /**
  * GET /api/products
  * Query: page, limit, keyword, category, brand, min, max, sort
- * sort: latest | priceAsc | priceDesc | ratingDesc
  */
 const getProducts = async (req, res) => {
   try {
@@ -20,7 +19,6 @@ const getProducts = async (req, res) => {
       sort = "latest",
     } = req.query;
 
-    // ---- Build query ----
     const q = {};
 
     if (keyword) {
@@ -37,7 +35,6 @@ const getProducts = async (req, res) => {
       if (max) q.price.$lte = Number(max);
     }
 
-    // ---- Sorting ----
     const sortMap = {
       latest: { createdAt: -1 },
       priceAsc: { price: 1 },
@@ -46,7 +43,6 @@ const getProducts = async (req, res) => {
     };
     const sortBy = sortMap[sort] || sortMap.latest;
 
-    // ---- Paging ----
     const skip = (Number(page) - 1) * Number(limit);
 
     const [items, total] = await Promise.all([
@@ -65,10 +61,7 @@ const getProducts = async (req, res) => {
   }
 };
 
-/**
- * GET /api/products/categories
- * Unique category list
- */
+/** GET /api/products/categories */
 const getCategories = async (_req, res) => {
   try {
     const cats = await Product.distinct("category", { category: { $ne: null } });
@@ -78,23 +71,18 @@ const getCategories = async (_req, res) => {
   }
 };
 
-/**
- * GET /api/products/brands
- * Unique brand list
- */
+/** GET /api/products/brands */
 const getBrands = async (_req, res) => {
   try {
     const brands = await Product.distinct("brand", { brand: { $ne: null } });
-    brands.sort((a, b) => String(a).localeCompare(String(b))); // neat sort
+    brands.sort((a, b) => String(a).localeCompare(String(b)));
     res.json(brands);
   } catch (e) {
     res.status(500).json({ message: e.message });
   }
 };
 
-/**
- * GET /api/products/:id
- */
+/** GET /api/products/:id */
 const getProductById = async (req, res) => {
   try {
     const p = await Product.findById(req.params.id);
@@ -105,29 +93,35 @@ const getProductById = async (req, res) => {
   }
 };
 
-/**
- * POST /api/products
- * Body (multipart): fields + images[] (multer-storage-cloudinary)
- * Requires: protect + adminOnly
- */
+/** POST /api/products (Admin only) */
 const addProduct = async (req, res) => {
   try {
-    const { name, price, category, stock, description, brand } = req.body;
+    const {
+      name,
+      actualPrice,
+      discountPrice,
+      category,
+      stock,
+      description,
+      brand,
+    } = req.body;
+
+    const finalPrice = discountPrice || actualPrice;
 
     const files = Array.isArray(req.files) ? req.files : [];
     const images = files.map((f) => ({ url: f.path, publicId: f.filename }));
 
     const doc = await Product.create({
       name,
-      price: Number(price),
+      actualPrice: Number(actualPrice),
+      discountPrice: Number(discountPrice),
+      price: Number(finalPrice), // ✅ always keep fallback
       category,
       stock: Number(stock),
       description,
       brand,
-      // legacy single image (compat)
       imageUrl: images[0]?.url || "",
       imagePublicId: images[0]?.publicId || "",
-      // multi-images
       images,
     });
 
@@ -137,19 +131,29 @@ const addProduct = async (req, res) => {
   }
 };
 
-/**
- * PUT /api/products/:id
- * Body (multipart): fields + images[]  (replaces entire image set if provided)
- * Requires: protect + adminOnly
- */
+/** PUT /api/products/:id (Admin only) */
 const updateProduct = async (req, res) => {
   try {
     const p = await Product.findById(req.params.id);
     if (!p) return res.status(404).json({ message: "Product not found" });
 
-    const { name, price, category, stock, description, brand } = req.body;
+    const {
+      name,
+      actualPrice,
+      discountPrice,
+      category,
+      stock,
+      description,
+      brand,
+    } = req.body;
+
     if (name != null) p.name = name;
-    if (price != null) p.price = Number(price);
+    if (actualPrice != null) p.actualPrice = Number(actualPrice);
+    if (discountPrice != null) p.discountPrice = Number(discountPrice);
+
+    // ✅ keep legacy "price" synced
+    p.price = p.discountPrice || p.actualPrice;
+
     if (category != null) p.category = category;
     if (stock != null) p.stock = Number(stock);
     if (description != null) p.description = description;
@@ -163,12 +167,13 @@ const updateProduct = async (req, res) => {
       ].filter(Boolean);
 
       await Promise.all(
-        toDelete.map((pid) => cloudinary.uploader.destroy(pid).catch(() => null))
+        toDelete.map((pid) =>
+          cloudinary.uploader.destroy(pid).catch(() => null)
+        )
       );
 
       const images = files.map((f) => ({ url: f.path, publicId: f.filename }));
       p.images = images;
-      // keep legacy fields in sync
       p.imageUrl = images[0]?.url || "";
       p.imagePublicId = images[0]?.publicId || "";
     }
@@ -180,10 +185,7 @@ const updateProduct = async (req, res) => {
   }
 };
 
-/**
- * DELETE /api/products/:id
- * Requires: protect + adminOnly
- */
+/** DELETE /api/products/:id */
 const deleteProduct = async (req, res) => {
   try {
     const p = await Product.findById(req.params.id);
@@ -205,18 +207,16 @@ const deleteProduct = async (req, res) => {
   }
 };
 
-/**
- * POST /api/products/:id/reviews
- * Body: { rating, comment }
- * Requires: protect
- */
+/** POST /api/products/:id/reviews */
 const addReview = async (req, res) => {
   try {
     const { rating, comment } = req.body;
     const userName = req.user?.name || "Anonymous";
 
     if (!rating || !comment) {
-      return res.status(400).json({ message: "rating and comment are required" });
+      return res
+        .status(400)
+        .json({ message: "rating and comment are required" });
     }
 
     const product = await Product.findById(req.params.id);
@@ -244,7 +244,7 @@ const addReview = async (req, res) => {
 module.exports = {
   getProducts,
   getCategories,
-  getBrands,          // ✅ new
+  getBrands,
   getProductById,
   addProduct,
   updateProduct,
