@@ -1,3 +1,4 @@
+// client/src/components/ProductCard.js
 import React from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
@@ -14,10 +15,9 @@ export default function ProductCard({ product }) {
   const reviews = Number(p.numReviews || 0);
 
   const onQuickAdd = (e) => {
-    e.preventDefault();    // Link navigation ko roko (sirf quick action ke liye)
+    e.preventDefault();
     e.stopPropagation();
     dispatch(addToCart(p, 1));
-    // navigate("/cart");   // agar add ke baad turant cart kholna ho to uncomment
   };
 
   const onWish = (e) => {
@@ -28,7 +28,7 @@ export default function ProductCard({ product }) {
 
   return (
     <Link
-      to={`/product/${p._id || p.id}`}       // ✅ ensure yahi ID hai
+      to={`/product/${p._id || p.id}`}
       className="card product"
       style={{ display: "block", textDecoration: "none", color: "inherit" }}
     >
@@ -37,12 +37,17 @@ export default function ProductCard({ product }) {
           src={img}
           alt={p.name}
           onError={(e) => (e.currentTarget.src = "/placeholder.png")}
-          style={{ width: "100%", height: 180, objectFit: "cover", borderRadius: 8, background: "#f3f4f6" }}
+          style={{
+            width: "100%",
+            height: 180,
+            objectFit: "cover",
+            borderRadius: 8,
+            background: "#f3f4f6",
+          }}
         />
 
-        {/* Quick actions overlay */}
+        {/* Quick actions */}
         <div
-          className="quick"
           style={{
             position: "absolute",
             right: 8,
@@ -50,21 +55,12 @@ export default function ProductCard({ product }) {
             display: "flex",
             gap: 6,
             zIndex: 2,
-            pointerEvents: "auto", // ✅ buttons clickable
           }}
         >
-          <button
-            onClick={onWish}
-            title="Wishlist"
-            style={iconBtn}
-          >
+          <button onClick={onWish} title="Wishlist" style={iconBtn}>
             ♥
           </button>
-          <button
-            onClick={onQuickAdd}
-            title="Add to Cart"
-            style={iconBtn}
-          >
+          <button onClick={onQuickAdd} title="Add to Cart" style={iconBtn}>
             ＋
           </button>
         </div>
@@ -72,7 +68,25 @@ export default function ProductCard({ product }) {
 
       <div style={{ padding: "10px 6px" }}>
         <div style={{ fontWeight: 700, marginBottom: 6 }}>{p.name}</div>
-        <div style={{ fontSize: 18, fontWeight: 700 }}>₹{p.price}</div>
+
+        {p.discountPrice > 0 ? (
+          <div>
+            <span style={{ fontSize: 18, fontWeight: 700, color: "green" }}>
+              ₹{p.discountPrice}
+            </span>
+            <span
+              style={{
+                marginLeft: 8,
+                textDecoration: "line-through",
+                color: "#9ca3af",
+              }}
+            >
+              ₹{p.actualPrice}
+            </span>
+          </div>
+        ) : (
+          <div style={{ fontSize: 18, fontWeight: 700 }}>₹{p.actualPrice}</div>
+        )}
 
         <div style={{ fontSize: 13, color: "#6b7280", marginTop: 4 }}>
           {"★".repeat(Math.round(rating)).padEnd(5, "☆")}{" "}
@@ -90,5 +104,4 @@ const iconBtn = {
   cursor: "pointer",
   background: "#111827",
   color: "#fff",
-  lineHeight: 1,
 };

@@ -21,17 +21,21 @@ const imageSchema = new mongoose.Schema(
 const productSchema = new mongoose.Schema(
   {
     name: { type: String, required: true },
-    price: { type: Number, required: true, default: 0 },
+
+    // ✅ new fields
+    actualPrice: { type: Number, required: true, default: 0 },   // MRP
+    discountPrice: { type: Number, required: true, default: 0 }, // after discount
+
     category: { type: String },
     brand: { type: String },
     stock: { type: Number, default: 0 },
     description: { type: String },
 
-    // legacy single image (keep for existing docs)
+    // legacy single image
     imageUrl: { type: String, default: "" },
     imagePublicId: { type: String, default: "" },
 
-    // NEW: multi-images
+    // multi-images
     images: { type: [imageSchema], default: [] },
 
     rating: { type: Number, default: 0 },

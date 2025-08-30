@@ -11,9 +11,7 @@ import ErrorBanner from "../components/ErrorBanner";
 export default function ProductDetails() {
   const { id } = useParams();
   const dispatch = useDispatch();
-
-  // ✅ take auth from Redux (NOT localStorage "user")
-  const { token, user } = useSelector((s) => s.auth || {});
+  const { token } = useSelector((s) => s.auth || {});
   const isAuthed = !!token;
 
   const [p, setP] = useState(null);
@@ -40,7 +38,10 @@ export default function ProductDetails() {
     }
   };
 
-  useEffect(() => { load(); /* eslint-disable-next-line */ }, [id]);
+  useEffect(() => {
+    load();
+    // eslint-disable-next-line
+  }, [id]);
 
   if (!p) {
     return (
@@ -73,14 +74,10 @@ export default function ProductDetails() {
 
   return (
     <div className="container" style={{ padding: 16 }}>
-      {/* Gallery + Info */}
+      {/* Gallery */}
       <div className="pdp">
         <div className="pdp-main">
-          <img
-            src={main}
-            alt={p.name}
-            onError={(e) => (e.currentTarget.src = "/placeholder.png")}
-          />
+          <img src={main} alt={p.name} onError={(e) => (e.currentTarget.src = "/placeholder.png")} />
           {imgs.length > 1 && (
             <div className="pdp-thumbs">
               {imgs.map((u, i) => (
@@ -97,6 +94,7 @@ export default function ProductDetails() {
           )}
         </div>
 
+        {/* Info */}
         <div>
           {!!msg && <ErrorBanner message={msg} />}
           <h2>{p.name}</h2>
@@ -104,7 +102,28 @@ export default function ProductDetails() {
             <RatingStars value={Number(p.rating || 0)} />
             <span style={{ color: "#6b7280" }}>{p.numReviews || 0} reviews</span>
           </div>
-          <div style={{ fontSize: 22, fontWeight: 700, marginTop: 6 }}>₹{p.price}</div>
+
+          {/* ✅ Discount + Actual Price */}
+          <div style={{ fontSize: 22, fontWeight: 700, marginTop: 6 }}>
+            {p.discountPrice > 0 ? (
+              <>
+                <span style={{ color: "green" }}>₹{p.discountPrice}</span>
+                <span
+                  style={{
+                    marginLeft: 10,
+                    textDecoration: "line-through",
+                    color: "#9ca3af",
+                    fontSize: 18,
+                  }}
+                >
+                  ₹{p.actualPrice}
+                </span>
+              </>
+            ) : (
+              <>₹{p.actualPrice}</>
+            )}
+          </div>
+
           <p style={{ color: "#6b7280" }}>
             {p.brand} {p.category ? `• ${p.category}` : ""}
           </p>
@@ -126,7 +145,6 @@ export default function ProductDetails() {
       {/* Reviews */}
       <div className="card" style={{ marginTop: 24, padding: 16 }}>
         <h3>Customer Reviews</h3>
-
         {(!p.reviews || p.reviews.length === 0) ? (
           <p style={{ color: "#6b7280" }}>Be the first to review.</p>
         ) : (
@@ -172,11 +190,11 @@ export default function ProductDetails() {
                 onChange={(e) => setComment(e.target.value)}
                 required
               />
-              <div><button type="submit">Submit Review</button></div>
+              <div>
+                <button type="submit">Submit Review</button>
+              </div>
               {msg && (
-                <p style={{ color: msg.startsWith("Thanks") ? "#065f46" : "#ef4444" }}>
-                  {msg}
-                </p>
+                <p style={{ color: msg.startsWith("Thanks") ? "#065f46" : "#ef4444" }}>{msg}</p>
               )}
             </form>
           )}
