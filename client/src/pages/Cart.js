@@ -1,4 +1,3 @@
-// client/src/pages/Cart.js
 import React, { useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
@@ -11,7 +10,8 @@ export default function Cart() {
 
   const totals = useMemo(() => {
     const subtotal = items.reduce(
-      (sum, it) => sum + ((it.discountPrice || it.actualPrice || 0) * (it.qty || 1)),
+      (sum, it) =>
+        sum + ((it.discountPrice || it.price || 0) * (it.qty || 1)),
       0
     );
     const count = items.reduce((c, it) => c + (it.qty || 1), 0);
@@ -68,19 +68,17 @@ export default function Cart() {
                     </div>
                   </Td>
 
+                  {/* ✅ Show discount + actual price */}
                   <Td dataLabel="Price">
-                    ₹{it.discountPrice || it.actualPrice}
-                    {it.actualPrice > it.discountPrice && (
-                      <span
-                        style={{
-                          textDecoration: "line-through",
-                          color: "#6b7280",
-                          fontSize: 14,
-                          marginLeft: 6,
-                        }}
-                      >
-                        ₹{it.actualPrice}
-                      </span>
+                    {it.discountPrice ? (
+                      <>
+                        <span style={{ textDecoration: "line-through", color: "#6b7280", fontSize: 14 }}>
+                          ₹{it.actualPrice || it.price}
+                        </span>{" "}
+                        <span style={{ fontWeight: 600 }}>₹{it.discountPrice}</span>
+                      </>
+                    ) : (
+                      <span>₹{it.price}</span>
                     )}
                   </Td>
 
@@ -98,7 +96,7 @@ export default function Cart() {
                   </Td>
 
                   <Td dataLabel="Total">
-                    ₹{(it.discountPrice || it.actualPrice || 0) * (it.qty || 1)}
+                    ₹{(it.discountPrice || it.price || 0) * (it.qty || 1)}
                   </Td>
 
                   <Td dataLabel="Action">
@@ -141,65 +139,29 @@ export default function Cart() {
 }
 
 const Th = ({ children, align = "center" }) => (
-  <th
-    style={{
-      textAlign: align,
-      fontSize: 14,
-      color: "#6b7280",
-      padding: "10px 8px",
-    }}
-  >
+  <th style={{ textAlign: align, fontSize: 14, color: "#6b7280", padding: "10px 8px" }}>
     {children}
   </th>
 );
 
 const Td = ({ children, align = "center", style, dataLabel }) => (
-  <td
-    style={{ textAlign: align, padding: "12px 8px", ...style }}
-    data-label={dataLabel}
-  >
+  <td style={{ textAlign: align, padding: "12px 8px", ...style }} data-label={dataLabel}>
     {children}
   </td>
 );
 
 const btn = (type) => {
   if (type === "delete")
-    return {
-      padding: "6px 10px",
-      borderRadius: 8,
-      border: 0,
-      background: "#dc2626",
-      color: "#fff",
-      cursor: "pointer",
-    };
+    return { padding: "6px 10px", borderRadius: 8, border: 0, background: "#dc2626", color: "#fff", cursor: "pointer" };
   if (type === "primary")
-    return {
-      padding: "10px 12px",
-      borderRadius: 8,
-      border: 0,
-      background: "#111827",
-      color: "#fff",
-      cursor: "pointer",
-    };
+    return { padding: "10px 12px", borderRadius: 8, border: 0, background: "#111827", color: "#fff", cursor: "pointer" };
   if (type === "ghost")
-    return {
-      padding: "10px 12px",
-      borderRadius: 8,
-      border: "1px solid #e5e7eb",
-      background: "#fff",
-      cursor: "pointer",
-    };
+    return { padding: "10px 12px", borderRadius: 8, border: "1px solid #e5e7eb", background: "#fff", cursor: "pointer" };
   return {};
 };
 
 const Row = ({ label, children }) => (
-  <div
-    style={{
-      display: "flex",
-      justifyContent: "space-between",
-      padding: "6px 0",
-    }}
-  >
+  <div style={{ display: "flex", justifyContent: "space-between", padding: "6px 0" }}>
     <span style={{ color: "#6b7280" }}>{label}</span>
     <span style={{ fontWeight: 600 }}>{children}</span>
   </div>

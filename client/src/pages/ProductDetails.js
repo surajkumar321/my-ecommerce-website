@@ -1,4 +1,3 @@
-// client/src/pages/ProductDetails.js
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import api from "../api";
@@ -51,11 +50,7 @@ export default function ProductDetails() {
     );
   }
 
-  const imgs = p.images?.length
-    ? p.images.map((i) => i.url)
-    : p.imageUrl
-    ? [p.imageUrl]
-    : [];
+  const imgs = p.images?.length ? p.images.map((i) => i.url) : p.imageUrl ? [p.imageUrl] : [];
   const main = active || imgs[0] || "/placeholder.png";
 
   const submitReview = async (e) => {
@@ -79,13 +74,8 @@ export default function ProductDetails() {
   return (
     <div className="container" style={{ padding: 16 }}>
       <div className="pdp">
-        {/* Gallery */}
         <div className="pdp-main">
-          <img
-            src={main}
-            alt={p.name}
-            onError={(e) => (e.currentTarget.src = "/placeholder.png")}
-          />
+          <img src={main} alt={p.name} onError={(e) => (e.currentTarget.src = "/placeholder.png")} />
           {imgs.length > 1 && (
             <div className="pdp-thumbs">
               {imgs.map((u, i) => (
@@ -102,29 +92,26 @@ export default function ProductDetails() {
           )}
         </div>
 
-        {/* Info */}
         <div>
           {!!msg && <ErrorBanner message={msg} />}
           <h2>{p.name}</h2>
+
           <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
             <RatingStars value={Number(p.rating || 0)} />
             <span style={{ color: "#6b7280" }}>{p.numReviews || 0} reviews</span>
           </div>
 
-          {/* ✅ Show discount + actual price */}
-          <div style={{ fontSize: 22, fontWeight: 700, marginTop: 6 }}>
-            ₹{p.discountPrice || p.actualPrice}
-            {p.actualPrice > p.discountPrice && (
-              <span
-                style={{
-                  textDecoration: "line-through",
-                  color: "#6b7280",
-                  fontSize: 15,
-                  marginLeft: 8,
-                }}
-              >
-                ₹{p.actualPrice}
-              </span>
+          {/* ✅ Price Section */}
+          <div style={{ marginTop: 6, display: "flex", gap: 10, alignItems: "center" }}>
+            {p.discountPrice ? (
+              <>
+                <span style={{ fontSize: 16, color: "#6b7280", textDecoration: "line-through" }}>
+                  ₹{p.actualPrice || p.price}
+                </span>
+                <span style={{ fontSize: 22, fontWeight: 700 }}>₹{p.discountPrice}</span>
+              </>
+            ) : (
+              <span style={{ fontSize: 22, fontWeight: 700 }}>₹{p.price}</span>
             )}
           </div>
 
@@ -132,14 +119,8 @@ export default function ProductDetails() {
             {p.brand} {p.category ? `• ${p.category}` : ""}
           </p>
           <p>{p.description}</p>
-          <div
-            style={{
-              display: "flex",
-              gap: 10,
-              alignItems: "center",
-              marginTop: 12,
-            }}
-          >
+
+          <div style={{ display: "flex", gap: 10, alignItems: "center", marginTop: 12 }}>
             <input
               type="number"
               min={1}
@@ -157,22 +138,17 @@ export default function ProductDetails() {
       <div className="card" style={{ marginTop: 24, padding: 16 }}>
         <h3>Customer Reviews</h3>
 
-        {(!p.reviews || p.reviews.length === 0) ? (
+        {!p.reviews || p.reviews.length === 0 ? (
           <p style={{ color: "#6b7280" }}>Be the first to review.</p>
         ) : (
           <div style={{ display: "grid", gap: 12 }}>
             {p.reviews.map((r, i) => (
-              <div
-                key={i}
-                style={{ borderTop: "1px solid #e5e7eb", paddingTop: 12 }}
-              >
+              <div key={i} style={{ borderTop: "1px solid #e5e7eb", paddingTop: 12 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                   <strong>{r.name}</strong>
                   <RatingStars value={Number(r.rating || 0)} size={14} />
                   <span style={{ color: "#9ca3af", fontSize: 12 }}>
-                    {r.createdAt
-                      ? new Date(r.createdAt).toLocaleDateString()
-                      : ""}
+                    {r.createdAt ? new Date(r.createdAt).toLocaleDateString() : ""}
                   </span>
                 </div>
                 <div style={{ marginTop: 6 }}>{r.comment}</div>
@@ -186,10 +162,7 @@ export default function ProductDetails() {
           {!isAuthed ? (
             <ErrorBanner message="Please login to write a review." />
           ) : (
-            <form
-              onSubmit={submitReview}
-              style={{ display: "grid", gap: 10, maxWidth: 480 }}
-            >
+            <form onSubmit={submitReview} style={{ display: "grid", gap: 10, maxWidth: 480 }}>
               <label>
                 Rating
                 <select
@@ -214,13 +187,7 @@ export default function ProductDetails() {
                 <button type="submit">Submit Review</button>
               </div>
               {msg && (
-                <p
-                  style={{
-                    color: msg.startsWith("Thanks") ? "#065f46" : "#ef4444",
-                  }}
-                >
-                  {msg}
-                </p>
+                <p style={{ color: msg.startsWith("Thanks") ? "#065f46" : "#ef4444" }}>{msg}</p>
               )}
             </form>
           )}
