@@ -113,13 +113,13 @@ export default function ProductDetails() {
             </span>
           </div>
 
-          {/* ✅ Price section */}
+          {/* ✅ Price section (Flipkart style) */}
           <div style={{ marginTop: 8 }}>
             {p.actualPrice && p.discountPrice ? (
               <>
                 <span
                   style={{
-                    fontSize: 14,
+                    fontSize: 16,
                     color: "#6b7280",
                     textDecoration: "line-through",
                     marginRight: 8,
@@ -128,24 +128,15 @@ export default function ProductDetails() {
                   ₹{p.actualPrice}
                 </span>
                 <span
-                  style={{
-                    fontSize: 22,
-                    fontWeight: 700,
-                    color: "#111827",
-                    marginRight: 8,
-                  }}
+                  style={{ fontSize: 24, fontWeight: 700, color: "#111827" }}
                 >
                   ₹{p.discountPrice}
                 </span>
-                <span style={{ fontSize: 14, color: "green", fontWeight: 600 }}>
-                  {Math.round(
-                    ((p.actualPrice - p.discountPrice) / p.actualPrice) * 100
-                  )}
-                  % OFF
-                </span>
               </>
             ) : (
-              <span style={{ fontSize: 22, fontWeight: 700, color: "#111827" }}>
+              <span
+                style={{ fontSize: 24, fontWeight: 700, color: "#111827" }}
+              >
                 ₹{p.price}
               </span>
             )}

@@ -1,4 +1,3 @@
-// client/src/pages/Checkout.js
 import React, { useMemo, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import api from "../api";
@@ -141,46 +140,13 @@ export default function Checkout() {
                   <img
                     src={it.imageUrl || getImageUrl(it)}
                     alt={it.name}
-                    onError={(e) =>
-                      (e.currentTarget.src = "/placeholder.png")
-                    }
+                    onError={(e) => (e.currentTarget.src = "/placeholder.png")}
                   />
                   <div className="meta">
                     <div className="name">{it.name}</div>
                     <div className="muted">x{it.qty}</div>
-                    {/* ✅ Show price details */}
-                    <div style={{ fontSize: 14 }}>
-                      {it.actualPrice && it.discountPrice ? (
-                        <>
-                          <span
-                            style={{
-                              textDecoration: "line-through",
-                              color: "#6b7280",
-                              marginRight: 6,
-                            }}
-                          >
-                            ₹{it.actualPrice}
-                          </span>
-                          <span style={{ fontWeight: 600, marginRight: 6 }}>
-                            ₹{it.discountPrice}
-                          </span>
-                          <span style={{ color: "green", fontWeight: 600 }}>
-                            {Math.round(
-                              ((it.actualPrice - it.discountPrice) /
-                                it.actualPrice) *
-                                100
-                            )}
-                            % OFF
-                          </span>
-                        </>
-                      ) : (
-                        <span style={{ fontWeight: 600 }}>₹{price}</span>
-                      )}
-                    </div>
                   </div>
-                  <div className="price">
-                    ₹{price * (it.qty || 1)}
-                  </div>
+                  <div className="price">₹{price * (it.qty || 1)}</div>
                 </div>
               );
             })}
