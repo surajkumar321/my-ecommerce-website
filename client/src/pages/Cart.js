@@ -1,4 +1,4 @@
-// src/pages/Cart.js
+// client/src/pages/Cart.js
 import React, { useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
@@ -10,10 +10,10 @@ export default function Cart() {
   const items = useSelector((s) => s.cart.items);
 
   const totals = useMemo(() => {
-    const subtotal = items.reduce((sum, it) => {
-      const price = it.discountPrice || it.price || 0;
-      return sum + price * (it.qty || 1);
-    }, 0);
+    const subtotal = items.reduce(
+      (sum, it) => sum + ((it.discountPrice || it.actualPrice || 0) * (it.qty || 1)),
+      0
+    );
     const count = items.reduce((c, it) => c + (it.qty || 1), 0);
     return { subtotal, count };
   }, [items]);
@@ -52,75 +52,65 @@ export default function Cart() {
               </tr>
             </thead>
             <tbody>
-              {items.map((it) => {
-                const price = it.discountPrice || it.price || 0;
-                const total = price * (it.qty || 1);
-
-                return (
-                  <tr key={it._id} style={{ borderTop: "1px solid #eee" }}>
-                    <Td align="left" dataLabel="Product">
-                      <div className="cart-prod">
-                        <img
-                          src={it.imageUrl || it.images?.[0]?.url || "/placeholder.png"}
-                          onError={(e) => (e.currentTarget.src = "/placeholder.png")}
-                          alt={it.name}
-                        />
-                        <div>
-                          <div className="name">{it.name}</div>
-                          <div className="sub">{it.category || "—"}</div>
-                        </div>
-                      </div>
-                    </Td>
-
-                    {/* ✅ Price with discount + actual */}
-                    <Td dataLabel="Price">
+              {items.map((it) => (
+                <tr key={it._id} style={{ borderTop: "1px solid #eee" }}>
+                  <Td align="left" dataLabel="Product">
+                    <div className="cart-prod">
+                      <img
+                        src={it.imageUrl || it.images?.[0]?.url || "/placeholder.png"}
+                        onError={(e) => (e.currentTarget.src = "/placeholder.png")}
+                        alt={it.name}
+                      />
                       <div>
-                        {it.discountPrice ? (
-                          <>
-                            <span style={{ fontWeight: 600 }}>₹{it.discountPrice}</span>
-                            <span
-                              style={{
-                                textDecoration: "line-through",
-                                color: "#6b7280",
-                                fontSize: 13,
-                                marginLeft: 6,
-                              }}
-                            >
-                              ₹{it.actualPrice}
-                            </span>
-                          </>
-                        ) : (
-                          <span>₹{it.price}</span>
-                        )}
+                        <div className="name">{it.name}</div>
+                        <div className="sub">{it.category || "—"}</div>
                       </div>
-                    </Td>
+                    </div>
+                  </Td>
 
-                    <Td dataLabel="Qty">
-                      <select
-                        value={it.qty || 1}
-                        onChange={(e) => changeQty(it._id, e.target.value)}
+                  <Td dataLabel="Price">
+                    ₹{it.discountPrice || it.actualPrice}
+                    {it.actualPrice > it.discountPrice && (
+                      <span
+                        style={{
+                          textDecoration: "line-through",
+                          color: "#6b7280",
+                          fontSize: 14,
+                          marginLeft: 6,
+                        }}
                       >
-                        {Array.from({ length: 10 }, (_, i) => i + 1).map((n) => (
-                          <option key={n} value={n}>
-                            {n}
-                          </option>
-                        ))}
-                      </select>
-                    </Td>
+                        ₹{it.actualPrice}
+                      </span>
+                    )}
+                  </Td>
 
-                    <Td dataLabel="Total">₹{total}</Td>
+                  <Td dataLabel="Qty">
+                    <select
+                      value={it.qty || 1}
+                      onChange={(e) => changeQty(it._id, e.target.value)}
+                    >
+                      {Array.from({ length: 10 }, (_, i) => i + 1).map((n) => (
+                        <option key={n} value={n}>
+                          {n}
+                        </option>
+                      ))}
+                    </select>
+                  </Td>
 
-                    <Td dataLabel="Action">
-                      <button
-                        onClick={() => dispatch(removeFromCart(it._id))}
-                        style={btn("delete")}
-                      >
-                        Remove
-                      </button>
-                    </Td>
-                  </tr>
-                );
-              })}
+                  <Td dataLabel="Total">
+                    ₹{(it.discountPrice || it.actualPrice || 0) * (it.qty || 1)}
+                  </Td>
+
+                  <Td dataLabel="Action">
+                    <button
+                      onClick={() => dispatch(removeFromCart(it._id))}
+                      style={btn("delete")}
+                    >
+                      Remove
+                    </button>
+                  </Td>
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>
@@ -164,7 +154,10 @@ const Th = ({ children, align = "center" }) => (
 );
 
 const Td = ({ children, align = "center", style, dataLabel }) => (
-  <td style={{ textAlign: align, padding: "12px 8px", ...style }} data-label={dataLabel}>
+  <td
+    style={{ textAlign: align, padding: "12px 8px", ...style }}
+    data-label={dataLabel}
+  >
     {children}
   </td>
 );
@@ -200,10 +193,15 @@ const btn = (type) => {
 };
 
 const Row = ({ label, children }) => (
-  <div style={{ display: "flex", justifyContent: "space-between", padding: "6px 0" }}>
+  <div
+    style={{
+      display: "flex",
+      justifyContent: "space-between",
+      padding: "6px 0",
+    }}
+  >
     <span style={{ color: "#6b7280" }}>{label}</span>
     <span style={{ fontWeight: 600 }}>{children}</span>
   </div>
 );
-
 

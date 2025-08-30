@@ -1,3 +1,4 @@
+// client/src/pages/ProductDetails.js
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import api from "../api";
@@ -17,6 +18,7 @@ export default function ProductDetails() {
   const [p, setP] = useState(null);
   const [active, setActive] = useState("");
   const [qty, setQty] = useState(1);
+
   const [rating, setRating] = useState(5);
   const [comment, setComment] = useState("");
   const [msg, setMsg] = useState("");
@@ -38,7 +40,7 @@ export default function ProductDetails() {
   };
 
   useEffect(() => {
-    load();
+    load(); // eslint-disable-next-line
   }, [id]);
 
   if (!p) {
@@ -49,7 +51,11 @@ export default function ProductDetails() {
     );
   }
 
-  const imgs = p.images?.length ? p.images.map((i) => i.url) : p.imageUrl ? [p.imageUrl] : [];
+  const imgs = p.images?.length
+    ? p.images.map((i) => i.url)
+    : p.imageUrl
+    ? [p.imageUrl]
+    : [];
   const main = active || imgs[0] || "/placeholder.png";
 
   const submitReview = async (e) => {
@@ -72,8 +78,8 @@ export default function ProductDetails() {
 
   return (
     <div className="container" style={{ padding: 16 }}>
-      {/* Gallery + Info */}
       <div className="pdp">
+        {/* Gallery */}
         <div className="pdp-main">
           <img
             src={main}
@@ -96,6 +102,7 @@ export default function ProductDetails() {
           )}
         </div>
 
+        {/* Info */}
         <div>
           {!!msg && <ErrorBanner message={msg} />}
           <h2>{p.name}</h2>
@@ -104,31 +111,20 @@ export default function ProductDetails() {
             <span style={{ color: "#6b7280" }}>{p.numReviews || 0} reviews</span>
           </div>
 
-          {/* ✅ Price Section */}
-          <div style={{ marginTop: 6 }}>
-            {p.actualPrice && p.discountPrice ? (
-              <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-                <span
-                  style={{
-                    fontSize: 18,
-                    color: "#6b7280",
-                    textDecoration: "line-through",
-                  }}
-                >
-                  ₹{p.actualPrice}
-                </span>
-                <span
-                  style={{
-                    fontSize: 22,
-                    fontWeight: 700,
-                    color: "#111827",
-                  }}
-                >
-                  ₹{p.discountPrice}
-                </span>
-              </div>
-            ) : (
-              <div style={{ fontSize: 22, fontWeight: 700 }}>₹{p.price}</div>
+          {/* ✅ Show discount + actual price */}
+          <div style={{ fontSize: 22, fontWeight: 700, marginTop: 6 }}>
+            ₹{p.discountPrice || p.actualPrice}
+            {p.actualPrice > p.discountPrice && (
+              <span
+                style={{
+                  textDecoration: "line-through",
+                  color: "#6b7280",
+                  fontSize: 15,
+                  marginLeft: 8,
+                }}
+              >
+                ₹{p.actualPrice}
+              </span>
             )}
           </div>
 
@@ -136,7 +132,14 @@ export default function ProductDetails() {
             {p.brand} {p.category ? `• ${p.category}` : ""}
           </p>
           <p>{p.description}</p>
-          <div style={{ display: "flex", gap: 10, alignItems: "center", marginTop: 12 }}>
+          <div
+            style={{
+              display: "flex",
+              gap: 10,
+              alignItems: "center",
+              marginTop: 12,
+            }}
+          >
             <input
               type="number"
               min={1}
@@ -153,17 +156,23 @@ export default function ProductDetails() {
       {/* Reviews */}
       <div className="card" style={{ marginTop: 24, padding: 16 }}>
         <h3>Customer Reviews</h3>
+
         {(!p.reviews || p.reviews.length === 0) ? (
           <p style={{ color: "#6b7280" }}>Be the first to review.</p>
         ) : (
           <div style={{ display: "grid", gap: 12 }}>
             {p.reviews.map((r, i) => (
-              <div key={i} style={{ borderTop: "1px solid #e5e7eb", paddingTop: 12 }}>
+              <div
+                key={i}
+                style={{ borderTop: "1px solid #e5e7eb", paddingTop: 12 }}
+              >
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                   <strong>{r.name}</strong>
                   <RatingStars value={Number(r.rating || 0)} size={14} />
                   <span style={{ color: "#9ca3af", fontSize: 12 }}>
-                    {r.createdAt ? new Date(r.createdAt).toLocaleDateString() : ""}
+                    {r.createdAt
+                      ? new Date(r.createdAt).toLocaleDateString()
+                      : ""}
                   </span>
                 </div>
                 <div style={{ marginTop: 6 }}>{r.comment}</div>
@@ -177,7 +186,10 @@ export default function ProductDetails() {
           {!isAuthed ? (
             <ErrorBanner message="Please login to write a review." />
           ) : (
-            <form onSubmit={submitReview} style={{ display: "grid", gap: 10, maxWidth: 480 }}>
+            <form
+              onSubmit={submitReview}
+              style={{ display: "grid", gap: 10, maxWidth: 480 }}
+            >
               <label>
                 Rating
                 <select
@@ -202,7 +214,11 @@ export default function ProductDetails() {
                 <button type="submit">Submit Review</button>
               </div>
               {msg && (
-                <p style={{ color: msg.startsWith("Thanks") ? "#065f46" : "#ef4444" }}>
+                <p
+                  style={{
+                    color: msg.startsWith("Thanks") ? "#065f46" : "#ef4444",
+                  }}
+                >
                   {msg}
                 </p>
               )}
