@@ -1,4 +1,3 @@
-// Server/models/Product.js
 const mongoose = require("mongoose");
 
 const reviewSchema = new mongoose.Schema(
@@ -22,9 +21,9 @@ const productSchema = new mongoose.Schema(
   {
     name: { type: String, required: true },
 
-    // ✅ new fields
-    actualPrice: { type: Number, required: true, default: 0 },   // MRP
-    discountPrice: { type: Number, required: true, default: 0 }, // after discount
+    // ✅ New pricing fields
+    actualPrice: { type: Number, required: true },   // Original price
+    discountPrice: { type: Number, required: true }, // Selling price
 
     category: { type: String },
     brand: { type: String },

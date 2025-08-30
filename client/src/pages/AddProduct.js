@@ -1,4 +1,3 @@
-// client/src/pages/AddProduct.js
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../api";
@@ -13,7 +12,6 @@ export default function AddProduct() {
     description: "",
     brand: "",
   });
-
   const [files, setFiles] = useState([]);
   const [previews, setPreviews] = useState([]);
   const [msg, setMsg] = useState("");
@@ -56,7 +54,7 @@ export default function AddProduct() {
         />
         <input
           type="number"
-          placeholder="Actual Price (MRP)"
+          placeholder="Actual Price"
           value={form.actualPrice}
           onChange={(e) => setForm({ ...form, actualPrice: e.target.value })}
           required

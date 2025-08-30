@@ -1,4 +1,3 @@
-// client/src/pages/ProductDetails.js
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import api from "../api";
@@ -11,13 +10,13 @@ import ErrorBanner from "../components/ErrorBanner";
 export default function ProductDetails() {
   const { id } = useParams();
   const dispatch = useDispatch();
+
   const { token } = useSelector((s) => s.auth || {});
   const isAuthed = !!token;
 
   const [p, setP] = useState(null);
   const [active, setActive] = useState("");
   const [qty, setQty] = useState(1);
-
   const [rating, setRating] = useState(5);
   const [comment, setComment] = useState("");
   const [msg, setMsg] = useState("");
@@ -40,7 +39,6 @@ export default function ProductDetails() {
 
   useEffect(() => {
     load();
-    // eslint-disable-next-line
   }, [id]);
 
   if (!p) {
@@ -74,10 +72,14 @@ export default function ProductDetails() {
 
   return (
     <div className="container" style={{ padding: 16 }}>
-      {/* Gallery */}
+      {/* Gallery + Info */}
       <div className="pdp">
         <div className="pdp-main">
-          <img src={main} alt={p.name} onError={(e) => (e.currentTarget.src = "/placeholder.png")} />
+          <img
+            src={main}
+            alt={p.name}
+            onError={(e) => (e.currentTarget.src = "/placeholder.png")}
+          />
           {imgs.length > 1 && (
             <div className="pdp-thumbs">
               {imgs.map((u, i) => (
@@ -94,7 +96,6 @@ export default function ProductDetails() {
           )}
         </div>
 
-        {/* Info */}
         <div>
           {!!msg && <ErrorBanner message={msg} />}
           <h2>{p.name}</h2>
@@ -103,24 +104,31 @@ export default function ProductDetails() {
             <span style={{ color: "#6b7280" }}>{p.numReviews || 0} reviews</span>
           </div>
 
-          {/* ✅ Discount + Actual Price */}
-          <div style={{ fontSize: 22, fontWeight: 700, marginTop: 6 }}>
-            {p.discountPrice > 0 ? (
-              <>
-                <span style={{ color: "green" }}>₹{p.discountPrice}</span>
+          {/* ✅ Price Section */}
+          <div style={{ marginTop: 6 }}>
+            {p.actualPrice && p.discountPrice ? (
+              <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
                 <span
                   style={{
-                    marginLeft: 10,
-                    textDecoration: "line-through",
-                    color: "#9ca3af",
                     fontSize: 18,
+                    color: "#6b7280",
+                    textDecoration: "line-through",
                   }}
                 >
                   ₹{p.actualPrice}
                 </span>
-              </>
+                <span
+                  style={{
+                    fontSize: 22,
+                    fontWeight: 700,
+                    color: "#111827",
+                  }}
+                >
+                  ₹{p.discountPrice}
+                </span>
+              </div>
             ) : (
-              <>₹{p.actualPrice}</>
+              <div style={{ fontSize: 22, fontWeight: 700 }}>₹{p.price}</div>
             )}
           </div>
 
@@ -194,7 +202,9 @@ export default function ProductDetails() {
                 <button type="submit">Submit Review</button>
               </div>
               {msg && (
-                <p style={{ color: msg.startsWith("Thanks") ? "#065f46" : "#ef4444" }}>{msg}</p>
+                <p style={{ color: msg.startsWith("Thanks") ? "#065f46" : "#ef4444" }}>
+                  {msg}
+                </p>
               )}
             </form>
           )}
