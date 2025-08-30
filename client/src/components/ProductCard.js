@@ -1,5 +1,5 @@
 import React from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { addToCart } from "../redux/actions/cartActions";
 import { toggleWishlist } from "../redux/actions/wishlistActions";
@@ -7,7 +7,6 @@ import { toggleWishlist } from "../redux/actions/wishlistActions";
 export default function ProductCard({ product }) {
   const p = product || {};
   const dispatch = useDispatch();
-  const navigate = useNavigate();
 
   const img = p.imageUrl || p.images?.[0]?.url || "/placeholder.png";
   const rating = Number(p.rating || 0);
@@ -72,7 +71,7 @@ export default function ProductCard({ product }) {
 
         {/* ✅ Price Section */}
         <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-          {p.actualPrice && p.discountPrice ? (
+          {p.discountPrice ? (
             <>
               <span
                 style={{
@@ -81,9 +80,15 @@ export default function ProductCard({ product }) {
                   textDecoration: "line-through",
                 }}
               >
-                ₹{p.actualPrice}
+                ₹{p.actualPrice || p.price}
               </span>
-              <span style={{ fontSize: 18, fontWeight: 700, color: "#111827" }}>
+              <span
+                style={{
+                  fontSize: 18,
+                  fontWeight: 700,
+                  color: "#111827",
+                }}
+              >
                 ₹{p.discountPrice}
               </span>
             </>
