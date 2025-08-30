@@ -128,15 +128,24 @@ export default function ProductDetails() {
                   ₹{p.actualPrice}
                 </span>
                 <span
-                  style={{ fontSize: 22, fontWeight: 700, color: "#111827" }}
+                  style={{
+                    fontSize: 22,
+                    fontWeight: 700,
+                    color: "#111827",
+                    marginRight: 8,
+                  }}
                 >
                   ₹{p.discountPrice}
                 </span>
+                <span style={{ fontSize: 14, color: "green", fontWeight: 600 }}>
+                  {Math.round(
+                    ((p.actualPrice - p.discountPrice) / p.actualPrice) * 100
+                  )}
+                  % OFF
+                </span>
               </>
             ) : (
-              <span
-                style={{ fontSize: 22, fontWeight: 700, color: "#111827" }}
-              >
+              <span style={{ fontSize: 22, fontWeight: 700, color: "#111827" }}>
                 ₹{p.price}
               </span>
             )}
@@ -247,6 +256,5 @@ export default function ProductDetails() {
     </div>
   );
 }
-
 
 

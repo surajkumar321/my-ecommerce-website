@@ -21,20 +21,19 @@ const productSchema = new mongoose.Schema(
   {
     name: { type: String, required: true },
 
-    // ✅ New pricing fields
-    actualPrice: { type: Number, required: true },   // Original price
-    discountPrice: { type: Number, required: true }, // Selling price
+    // ✅ Pricing fields
+    actualPrice: { type: Number, required: true },
+    discountPrice: { type: Number, required: true },
+    price: { type: Number, default: 0 }, // compatibility ke liye
 
     category: { type: String },
     brand: { type: String },
     stock: { type: Number, default: 0 },
     description: { type: String },
 
-    // legacy single image
     imageUrl: { type: String, default: "" },
     imagePublicId: { type: String, default: "" },
 
-    // multi-images
     images: { type: [imageSchema], default: [] },
 
     rating: { type: Number, default: 0 },

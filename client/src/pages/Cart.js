@@ -1,4 +1,4 @@
-// src/pages/Cart.js
+// client/src/pages/Cart.js
 import React, { useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
@@ -9,7 +9,6 @@ export default function Cart() {
   const nav = useNavigate();
   const items = useSelector((s) => s.cart.items);
 
-  // ✅ totals calculation
   const totals = useMemo(() => {
     const subtotal = items.reduce((sum, it) => {
       const price = it.discountPrice || it.actualPrice || it.price || 0;
@@ -71,7 +70,7 @@ export default function Cart() {
                       </div>
                     </Td>
 
-                    {/* ✅ Price Section */}
+                    {/* ✅ Price Section with % OFF */}
                     <Td dataLabel="Price">
                       {it.actualPrice && it.discountPrice ? (
                         <>
@@ -85,14 +84,18 @@ export default function Cart() {
                           >
                             ₹{it.actualPrice}
                           </span>
-                          <span style={{ fontSize: 16, fontWeight: 700 }}>
+                          <span style={{ fontSize: 16, fontWeight: 700, marginRight: 6 }}>
                             ₹{it.discountPrice}
+                          </span>
+                          <span style={{ fontSize: 13, color: "green", fontWeight: 600 }}>
+                            {Math.round(
+                              ((it.actualPrice - it.discountPrice) / it.actualPrice) * 100
+                            )}
+                            % OFF
                           </span>
                         </>
                       ) : (
-                        <span style={{ fontSize: 16, fontWeight: 700 }}>
-                          ₹{it.price}
-                        </span>
+                        <span style={{ fontSize: 16, fontWeight: 700 }}>₹{it.price}</span>
                       )}
                     </Td>
 
@@ -109,7 +112,6 @@ export default function Cart() {
                       </select>
                     </Td>
 
-                    {/* ✅ Total per item */}
                     <Td dataLabel="Total">₹{price * (it.qty || 1)}</Td>
 
                     <Td dataLabel="Action">
@@ -212,4 +214,3 @@ const Row = ({ label, children }) => (
     <span style={{ fontWeight: 600 }}>{children}</span>
   </div>
 );
-

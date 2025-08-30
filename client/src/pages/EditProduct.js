@@ -1,6 +1,6 @@
 // client/src/pages/EditProduct.js
 import React, { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import api from "../api";
 
 export default function EditProduct() {
@@ -8,39 +8,41 @@ export default function EditProduct() {
   const nav = useNavigate();
 
   const [form, setForm] = useState({
-    name: "", price: "", brand: "", category: "", stock: "", description: ""
+    name: "",
+    actualPrice: "",
+    discountPrice: "",
+    category: "",
+    stock: "",
+    description: "",
+    brand: "",
   });
-  const [serverImages, setServerImages] = useState([]); // existing images
-  const [files, setFiles] = useState([]);               // new uploads (replace)
+  const [files, setFiles] = useState([]);
   const [previews, setPreviews] = useState([]);
   const [msg, setMsg] = useState("");
 
+  // Load existing product
   useEffect(() => {
-    (async () => {
+    const load = async () => {
       try {
         const { data } = await api.get(`/products/${id}`);
         setForm({
           name: data.name || "",
-          price: data.price || "",
-          brand: data.brand || "",
+          actualPrice: data.actualPrice || data.price || "",
+          discountPrice: data.discountPrice || "",
           category: data.category || "",
-          stock: data.stock ?? "",
+          stock: data.stock || "",
           description: data.description || "",
+          brand: data.brand || "",
         });
-        // Prefer multi-images; fallback to legacy one
-        const existing =
-          Array.isArray(data.images) && data.images.length
-            ? data.images
-            : data.imageUrl
-            ? [{ url: data.imageUrl, publicId: data.imagePublicId }]
-            : [];
-        setServerImages(existing);
-      } catch (e) {
-        alert(e.response?.data?.message || "Product not found");
-        nav("/admin/dashboard", { replace: true });
+        setPreviews(
+          (data.images || []).map((img) => img.url).filter(Boolean)
+        );
+      } catch (err) {
+        setMsg(err.response?.data?.message || err.message);
       }
-    })();
-  }, [id, nav]);
+    };
+    load();
+  }, [id]);
 
   const onFiles = (e) => {
     const arr = Array.from(e.target.files || [])
@@ -50,16 +52,28 @@ export default function EditProduct() {
     setPreviews(arr.map((f) => URL.createObjectURL(f)));
   };
 
-  const save = async (e) => {
+  const submit = async (e) => {
     e.preventDefault();
     try {
       const fd = new FormData();
-      Object.entries(form).forEach(([k, v]) => fd.append(k, v));
-      // If any files selected, backend will replace entire image set
+
+      const finalPrice = form.discountPrice || form.actualPrice;
+
+      fd.append("name", form.name);
+      fd.append("actualPrice", form.actualPrice);
+      fd.append("discountPrice", form.discountPrice);
+      fd.append("price", finalPrice); // ✅ compatibility
+      fd.append("brand", form.brand);
+      fd.append("category", form.category);
+      fd.append("stock", form.stock);
+      fd.append("description", form.description);
+
       files.forEach((f) => fd.append("images", f));
+
       await api.put(`/products/${id}`, fd, {
         headers: { "Content-Type": "multipart/form-data" },
       });
+
       nav("/admin/dashboard");
     } catch (e2) {
       setMsg(e2.response?.data?.message || e2.message);
@@ -69,69 +83,58 @@ export default function EditProduct() {
   return (
     <div className="container">
       <h2>Edit Product</h2>
-      <form onSubmit={save} style={{ display: "grid", gap: 10, maxWidth: 560 }}>
+      <form
+        onSubmit={submit}
+        style={{ display: "grid", gap: 10, maxWidth: 560 }}
+      >
         <input
+          placeholder="Name"
           value={form.name}
           onChange={(e) => setForm({ ...form, name: e.target.value })}
-          placeholder="Name"
+          required
         />
         <input
           type="number"
-          value={form.price}
-          onChange={(e) => setForm({ ...form, price: e.target.value })}
-          placeholder="Price"
+          placeholder="Actual Price"
+          value={form.actualPrice}
+          onChange={(e) =>
+            setForm({ ...form, actualPrice: e.target.value })
+          }
+          required
         />
         <input
+          type="number"
+          placeholder="Discount Price"
+          value={form.discountPrice}
+          onChange={(e) =>
+            setForm({ ...form, discountPrice: e.target.value })
+          }
+        />
+        <input
+          placeholder="Brand"
           value={form.brand}
           onChange={(e) => setForm({ ...form, brand: e.target.value })}
-          placeholder="Brand"
         />
         <input
+          placeholder="Category"
           value={form.category}
           onChange={(e) => setForm({ ...form, category: e.target.value })}
-          placeholder="Category"
         />
         <input
           type="number"
+          placeholder="Stock"
           value={form.stock}
           onChange={(e) => setForm({ ...form, stock: e.target.value })}
-          placeholder="Stock"
         />
         <textarea
+          placeholder="Description"
           value={form.description}
           onChange={(e) =>
             setForm({ ...form, description: e.target.value })
           }
-          placeholder="Description"
         />
 
-        <div>
-          <label>Current Images</label>
-          <div
-            style={{
-              display: "grid",
-              gap: 8,
-              gridTemplateColumns: "repeat(auto-fill, minmax(100px,1fr))",
-            }}
-          >
-            {serverImages.map((im, i) => (
-              <img
-                key={i}
-                src={im.url || "/placeholder.png"}
-                alt={"img" + i}
-                onError={(e) => (e.currentTarget.src = "/placeholder.png")}
-                style={{
-                  width: "100%",
-                  height: 100,
-                  objectFit: "cover",
-                  borderRadius: 8,
-                }}
-              />
-            ))}
-          </div>
-        </div>
-
-        <label>Upload New Images (replace all)</label>
+        <label>Update Images (up to 6)</label>
         <input type="file" accept="image/*" multiple onChange={onFiles} />
         {previews.length > 0 && (
           <div
@@ -145,7 +148,7 @@ export default function EditProduct() {
               <img
                 key={i}
                 src={src}
-                alt={"p" + i}
+                alt={"preview" + i}
                 style={{
                   width: "100%",
                   height: 100,
@@ -158,7 +161,7 @@ export default function EditProduct() {
         )}
 
         <div style={{ display: "flex", gap: 8 }}>
-          <button type="submit">Save</button>
+          <button type="submit">Update</button>
           <button type="button" onClick={() => nav(-1)}>
             Cancel
           </button>

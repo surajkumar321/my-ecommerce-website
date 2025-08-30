@@ -70,9 +70,9 @@ export default function ProductCard({ product }) {
       <div style={{ padding: "10px 6px" }}>
         <div style={{ fontWeight: 700, marginBottom: 6 }}>{p.name}</div>
 
-        {/* ✅ Price Section */}
+        {/* ✅ Price Section with % OFF */}
         <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-          {p.discountPrice ? (
+          {p.actualPrice && p.discountPrice ? (
             <>
               <span
                 style={{
@@ -81,10 +81,16 @@ export default function ProductCard({ product }) {
                   textDecoration: "line-through",
                 }}
               >
-                ₹{p.actualPrice || p.price}
+                ₹{p.actualPrice}
               </span>
               <span style={{ fontSize: 18, fontWeight: 700, color: "#111827" }}>
                 ₹{p.discountPrice}
+              </span>
+              <span style={{ fontSize: 14, color: "green", fontWeight: 600 }}>
+                {Math.round(
+                  ((p.actualPrice - p.discountPrice) / p.actualPrice) * 100
+                )}
+                % OFF
               </span>
             </>
           ) : (
